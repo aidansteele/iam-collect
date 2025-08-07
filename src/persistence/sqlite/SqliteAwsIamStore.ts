@@ -3,7 +3,7 @@ import { AwsIamStore, OrganizationPolicyType, ResourceTypeParts } from '../AwsIa
 import { SqliteAdapter } from './SqliteAdapter.js'
 
 export class SqliteAwsIamStore implements AwsIamStore {
-  public sqliteAdapter: SqliteAdapter
+  private sqliteAdapter: SqliteAdapter
 
   constructor(dbPath: string) {
     this.sqliteAdapter = new SqliteAdapter(dbPath)
@@ -141,14 +141,6 @@ export class SqliteAwsIamStore implements AwsIamStore {
     sql += ` AND arn LIKE ?`
     params.push(arnPattern)
 
-    // Debug logging
-    console.log('SQL:', sql)
-    console.log('Params:', params)
-    
-    // Debug: let's see what's actually in the database
-    const allData = this.sqliteAdapter.select('resource_metadata', { account_id: accountId.toLowerCase() })
-    console.log('All data for account:', allData)
-
     // Add metadata filtering if specified
     if (options.metadata) {
       for (const [key, value] of Object.entries(options.metadata)) {
@@ -161,7 +153,6 @@ export class SqliteAwsIamStore implements AwsIamStore {
     }
 
     const results = this.sqliteAdapter.exec(sql, params)
-    console.log('Results:', results)
     return results.map((row: any) => row.arn)
   }
 

@@ -371,29 +371,27 @@ describe('SqliteAwsIamStore', () => {
   describe('List Resources', () => {
     const testAccountId = '123456789012'
 
-    beforeEach(async () => {
-      // Set up test data
+    it('should list resources by service', async () => {
+      // Set up test data with non-empty content
       await store.saveResourceMetadata(
         testAccountId,
         'arn:aws:iam::123456789012:role/test-role',
         'trust-policy',
-        {}
+        { Version: '2012-10-17', Statement: [] }
       )
       await store.saveResourceMetadata(
         testAccountId,
         'arn:aws:iam::123456789012:user/test-user',
         'metadata',
-        {}
+        { UserName: 'test-user' }
       )
       await store.saveResourceMetadata(
         testAccountId,
         'arn:aws:s3:::test-bucket',
         'policy',
-        {}
+        { Version: '2012-10-17' }
       )
-    })
 
-    it('should list resources by service', async () => {
       const iamResources = await store.listResources(testAccountId, { service: 'iam' })
       const s3Resources = await store.listResources(testAccountId, { service: 's3' })
       
@@ -405,6 +403,20 @@ describe('SqliteAwsIamStore', () => {
     })
 
     it('should list resources by service and resource type', async () => {
+      // Set up test data with non-empty content
+      await store.saveResourceMetadata(
+        testAccountId,
+        'arn:aws:iam::123456789012:role/test-role',
+        'trust-policy',
+        { Version: '2012-10-17', Statement: [] }
+      )
+      await store.saveResourceMetadata(
+        testAccountId,
+        'arn:aws:iam::123456789012:user/test-user',
+        'metadata',
+        { UserName: 'test-user' }
+      )
+
       const roleResources = await store.listResources(testAccountId, {
         service: 'iam',
         resourceType: 'role'
@@ -429,10 +441,10 @@ describe('SqliteAwsIamStore', () => {
       const arn2 = 'arn:aws:iam::123456789012:role/role-2'
       const arn3 = 'arn:aws:iam::123456789012:role/role-3'
       
-      // Save some initial resources
-      await store.saveResourceMetadata(testAccountId, arn1, 'metadata', {})
-      await store.saveResourceMetadata(testAccountId, arn2, 'metadata', {})
-      await store.saveResourceMetadata(testAccountId, arn3, 'metadata', {})
+      // Save some initial resources with non-empty content
+      await store.saveResourceMetadata(testAccountId, arn1, 'metadata', { name: 'role-1' })
+      await store.saveResourceMetadata(testAccountId, arn2, 'metadata', { name: 'role-2' })
+      await store.saveResourceMetadata(testAccountId, arn3, 'metadata', { name: 'role-3' })
       
       // Sync with only arn1 and arn3
       await store.syncResourceList(testAccountId, { service: 'iam', resourceType: 'role' }, [arn1, arn3])
@@ -447,9 +459,9 @@ describe('SqliteAwsIamStore', () => {
 
   describe('List Account IDs', () => {
     it('should list all account IDs with data', async () => {
-      await store.saveResourceMetadata('111111111111', 'arn:aws:iam::111111111111:role/role-1', 'metadata', {})
-      await store.saveAccountMetadata('222222222222', 'metadata', {})
-      await store.saveRamResource('333333333333', 'arn:aws:ram:us-east-1:333333333333:share/share-1', {})
+      await store.saveResourceMetadata('111111111111', 'arn:aws:iam::111111111111:role/role-1', 'metadata', { name: 'role-1' })
+      await store.saveAccountMetadata('222222222222', 'metadata', { name: 'account-2' })
+      await store.saveRamResource('333333333333', 'arn:aws:ram:us-east-1:333333333333:share/share-1', { name: 'share-1' })
       
       const accountIds = await store.listAccountIds()
       
