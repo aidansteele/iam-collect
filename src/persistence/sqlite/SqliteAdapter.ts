@@ -117,12 +117,24 @@ export class SqliteAdapter {
     `)
 
     // Create indexes for better performance
-    this.db.exec('CREATE INDEX IF NOT EXISTS idx_resource_metadata_account_arn ON resource_metadata(account_id, arn)')
-    this.db.exec('CREATE INDEX IF NOT EXISTS idx_account_metadata_account ON account_metadata(account_id)')
-    this.db.exec('CREATE INDEX IF NOT EXISTS idx_organization_metadata_org ON organization_metadata(organization_id)')
-    this.db.exec('CREATE INDEX IF NOT EXISTS idx_organizational_unit_metadata_org_ou ON organizational_unit_metadata(organization_id, ou_id)')
-    this.db.exec('CREATE INDEX IF NOT EXISTS idx_organization_policy_metadata_org_type ON organization_policy_metadata(organization_id, policy_type)')
-    this.db.exec('CREATE INDEX IF NOT EXISTS idx_ram_resources_account_region ON ram_resources(account_id, region)')
+    this.db.exec(
+      'CREATE INDEX IF NOT EXISTS idx_resource_metadata_account_arn ON resource_metadata(account_id, arn)'
+    )
+    this.db.exec(
+      'CREATE INDEX IF NOT EXISTS idx_account_metadata_account ON account_metadata(account_id)'
+    )
+    this.db.exec(
+      'CREATE INDEX IF NOT EXISTS idx_organization_metadata_org ON organization_metadata(organization_id)'
+    )
+    this.db.exec(
+      'CREATE INDEX IF NOT EXISTS idx_organizational_unit_metadata_org_ou ON organizational_unit_metadata(organization_id, ou_id)'
+    )
+    this.db.exec(
+      'CREATE INDEX IF NOT EXISTS idx_organization_policy_metadata_org_type ON organization_policy_metadata(organization_id, policy_type)'
+    )
+    this.db.exec(
+      'CREATE INDEX IF NOT EXISTS idx_ram_resources_account_region ON ram_resources(account_id, region)'
+    )
   }
 
   /**
@@ -131,14 +143,17 @@ export class SqliteAdapter {
   insertOrUpdate(table: string, data: Record<string, any>): void {
     const keys = Object.keys(data)
     const placeholders = keys.map(() => '?').join(', ')
-    const updateClause = keys.filter(k => k !== 'created_at').map(k => `${k} = excluded.${k}`).join(', ')
-    
+    const updateClause = keys
+      .filter((k) => k !== 'created_at')
+      .map((k) => `${k} = excluded.${k}`)
+      .join(', ')
+
     const sql = `
       INSERT INTO ${table} (${keys.join(', ')}) 
       VALUES (${placeholders})
       ON CONFLICT DO UPDATE SET ${updateClause}, updated_at = CURRENT_TIMESTAMP
     `
-    
+
     const stmt = this.db.prepare(sql)
     stmt.run(...Object.values(data))
   }
@@ -151,7 +166,9 @@ export class SqliteAdapter {
     let params: any[] = []
 
     if (where && Object.keys(where).length > 0) {
-      const conditions = Object.keys(where).map(k => `${k} = ?`).join(' AND ')
+      const conditions = Object.keys(where)
+        .map((k) => `${k} = ?`)
+        .join(' AND ')
       sql += ` WHERE ${conditions}`
       params = Object.values(where)
     }
@@ -164,7 +181,9 @@ export class SqliteAdapter {
    * Select a single record from a table
    */
   selectOne(table: string, where: Record<string, any>): any {
-    const conditions = Object.keys(where).map(k => `${k} = ?`).join(' AND ')
+    const conditions = Object.keys(where)
+      .map((k) => `${k} = ?`)
+      .join(' AND ')
     const sql = `SELECT * FROM ${table} WHERE ${conditions} LIMIT 1`
     const stmt = this.db.prepare(sql)
     return stmt.get(...Object.values(where))
@@ -174,7 +193,9 @@ export class SqliteAdapter {
    * Delete records from a table
    */
   delete(table: string, where: Record<string, any>): void {
-    const conditions = Object.keys(where).map(k => `${k} = ?`).join(' AND ')
+    const conditions = Object.keys(where)
+      .map((k) => `${k} = ?`)
+      .join(' AND ')
     const sql = `DELETE FROM ${table} WHERE ${conditions}`
     const stmt = this.db.prepare(sql)
     stmt.run(...Object.values(where))

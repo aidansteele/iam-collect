@@ -8,7 +8,10 @@ describe('SQLite Integration Test', () => {
   let tempDbPath: string
 
   beforeEach(() => {
-    tempDbPath = path.join('/tmp', `integration-test-${Date.now()}-${Math.random().toString(36).substr(2, 9)}.db`)
+    tempDbPath = path.join(
+      '/tmp',
+      `integration-test-${Date.now()}-${Math.random().toString(36).substr(2, 9)}.db`
+    )
   })
 
   afterEach(() => {
@@ -24,7 +27,7 @@ describe('SQLite Integration Test', () => {
     }
 
     const store = createStorageClient(storageConfig, 'aws')
-    
+
     expect(store).toBeInstanceOf(SqliteAwsIamStore)
   })
 
@@ -35,7 +38,7 @@ describe('SQLite Integration Test', () => {
     }
 
     const store = createStorageClient(storageConfig, 'aws')
-    
+
     // Test basic operations
     const testAccountId = '123456789012'
     const testArn = 'arn:aws:iam::123456789012:role/test-role'
@@ -43,7 +46,7 @@ describe('SQLite Integration Test', () => {
 
     await store.saveResourceMetadata(testAccountId, testArn, 'trust-policy', testData)
     const result = await store.getResourceMetadata(testAccountId, testArn, 'trust-policy')
-    
+
     expect(result).toEqual(testData)
 
     // Test cleanup

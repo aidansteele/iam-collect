@@ -83,7 +83,11 @@ export class SqliteAwsIamStore implements AwsIamStore {
     return this.parseContent<T>(result.data)
   }
 
-  async deleteResourceMetadata(accountId: string, arn: string, metadataType: string): Promise<void> {
+  async deleteResourceMetadata(
+    accountId: string,
+    arn: string,
+    metadataType: string
+  ): Promise<void> {
     this.sqliteAdapter.delete('resource_metadata', {
       account_id: accountId.toLowerCase(),
       arn: arn.toLowerCase(),
@@ -110,27 +114,27 @@ export class SqliteAwsIamStore implements AwsIamStore {
     // Add ARN-based filtering using LIKE patterns
     // ARN format: arn:partition:service:region:account:resource
     const arnPatternParts: string[] = ['arn']
-    
+
     if (options.partition) {
       arnPatternParts.push(options.partition)
     } else {
       arnPatternParts.push('%')
     }
-    
+
     arnPatternParts.push(options.service)
-    
+
     if (options.region) {
       arnPatternParts.push(options.region)
     } else {
       arnPatternParts.push('%')
     }
-    
+
     if (options.account) {
       arnPatternParts.push(options.account)
     } else {
       arnPatternParts.push('%')
     }
-    
+
     if (options.resourceType) {
       arnPatternParts.push(options.resourceType + '%')
     } else {
@@ -179,7 +183,7 @@ export class SqliteAwsIamStore implements AwsIamStore {
     desiredResources: string[]
   ): Promise<void> {
     const existingResources = await this.listResources(accountId, options)
-    const resourcesToDelete = existingResources.filter(arn => !desiredResources.includes(arn))
+    const resourcesToDelete = existingResources.filter((arn) => !desiredResources.includes(arn))
 
     for (const arn of resourcesToDelete) {
       await this.deleteResource(accountId, arn)
@@ -241,7 +245,11 @@ export class SqliteAwsIamStore implements AwsIamStore {
     return this.parseContent<T>(result.data)
   }
 
-  async saveOrganizationMetadata(organizationId: string, metadataType: string, data: any): Promise<void> {
+  async saveOrganizationMetadata(
+    organizationId: string,
+    metadataType: string,
+    data: any
+  ): Promise<void> {
     if (this.isEmptyContent(data)) {
       await this.deleteOrganizationMetadata(organizationId, metadataType)
       return
@@ -350,7 +358,12 @@ export class SqliteAwsIamStore implements AwsIamStore {
     data: any
   ): Promise<void> {
     if (this.isEmptyContent(data)) {
-      await this.deleteOrganizationPolicyMetadata(organizationId, policyType, policyId, metadataType)
+      await this.deleteOrganizationPolicyMetadata(
+        organizationId,
+        policyType,
+        policyId,
+        metadataType
+      )
       return
     }
 
@@ -409,18 +422,22 @@ export class SqliteAwsIamStore implements AwsIamStore {
     return Array.from(policyIds)
   }
 
-  async syncRamResources(accountId: string, region: string | undefined, arns: string[]): Promise<void> {
+  async syncRamResources(
+    accountId: string,
+    region: string | undefined,
+    arns: string[]
+  ): Promise<void> {
     const normalizedRegion = region || 'global'
-    
+
     // Delete existing resources not in the provided list
     const existingResults = this.sqliteAdapter.select('ram_resources', {
       account_id: accountId.toLowerCase(),
       region: normalizedRegion
     })
-    
+
     const existingArns = existingResults.map((row: any) => row.arn)
-    const arnsToDelete = existingArns.filter(arn => !arns.includes(arn))
-    
+    const arnsToDelete = existingArns.filter((arn) => !arns.includes(arn))
+
     for (const arn of arnsToDelete) {
       this.sqliteAdapter.delete('ram_resources', {
         account_id: accountId.toLowerCase(),
@@ -432,7 +449,7 @@ export class SqliteAwsIamStore implements AwsIamStore {
   async saveRamResource(accountId: string, arn: string, data: any): Promise<void> {
     const arnParts = splitArnParts(arn)
     const region = arnParts.region || 'global'
-    
+
     if (this.isEmptyContent(data)) {
       this.sqliteAdapter.delete('ram_resources', {
         account_id: accountId.toLowerCase(),
@@ -468,7 +485,9 @@ export class SqliteAwsIamStore implements AwsIamStore {
   }
 
   async listAccountIds(): Promise<string[]> {
-    const results = this.sqliteAdapter.exec('SELECT DISTINCT account_id FROM resource_metadata UNION SELECT DISTINCT account_id FROM account_metadata UNION SELECT DISTINCT account_id FROM ram_resources')
+    const results = this.sqliteAdapter.exec(
+      'SELECT DISTINCT account_id FROM resource_metadata UNION SELECT DISTINCT account_id FROM account_metadata UNION SELECT DISTINCT account_id FROM ram_resources'
+    )
     return results.map((row: any) => row.account_id)
   }
 
@@ -501,7 +520,7 @@ export class SqliteAwsIamStore implements AwsIamStore {
 
     const content = this.normalizeContent(data)
     const newLockId = Math.random().toString(36).substr(2, 9)
-    
+
     this.sqliteAdapter.insertOrUpdate('indexes', {
       index_name: indexName.toLowerCase(),
       data: content,

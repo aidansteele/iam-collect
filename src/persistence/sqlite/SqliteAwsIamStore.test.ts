@@ -10,7 +10,10 @@ describe('SqliteAwsIamStore', () => {
 
   beforeEach(() => {
     // Create a temporary database file for each test
-    tempDbPath = path.join('/tmp', `test-${Date.now()}-${Math.random().toString(36).substr(2, 9)}.db`)
+    tempDbPath = path.join(
+      '/tmp',
+      `test-${Date.now()}-${Math.random().toString(36).substr(2, 9)}.db`
+    )
     store = new SqliteAwsIamStore(tempDbPath)
   })
 
@@ -30,7 +33,7 @@ describe('SqliteAwsIamStore', () => {
 
     it('should save and retrieve resource metadata', async () => {
       await store.saveResourceMetadata(testAccountId, testArn, testMetadataType, testData)
-      
+
       const result = await store.getResourceMetadata(testAccountId, testArn, testMetadataType)
       expect(result).toEqual(testData)
     })
@@ -48,8 +51,10 @@ describe('SqliteAwsIamStore', () => {
 
     it('should list resource metadata types', async () => {
       await store.saveResourceMetadata(testAccountId, testArn, 'trust-policy', testData)
-      await store.saveResourceMetadata(testAccountId, testArn, 'inline-policies', { policies: ['policy1'] })
-      
+      await store.saveResourceMetadata(testAccountId, testArn, 'inline-policies', {
+        policies: ['policy1']
+      })
+
       const metadataTypes = await store.listResourceMetadata(testAccountId, testArn)
       expect(metadataTypes).toContain('trust-policy')
       expect(metadataTypes).toContain('inline-policies')
@@ -59,12 +64,12 @@ describe('SqliteAwsIamStore', () => {
     it('should delete specific resource metadata', async () => {
       await store.saveResourceMetadata(testAccountId, testArn, testMetadataType, testData)
       await store.saveResourceMetadata(testAccountId, testArn, 'another-type', { other: 'data' })
-      
+
       await store.deleteResourceMetadata(testAccountId, testArn, testMetadataType)
-      
+
       const result = await store.getResourceMetadata(testAccountId, testArn, testMetadataType)
       expect(result).toBeUndefined()
-      
+
       const remainingTypes = await store.listResourceMetadata(testAccountId, testArn)
       expect(remainingTypes).toEqual(['another-type'])
     })
@@ -72,19 +77,19 @@ describe('SqliteAwsIamStore', () => {
     it('should delete all resource metadata', async () => {
       await store.saveResourceMetadata(testAccountId, testArn, 'trust-policy', testData)
       await store.saveResourceMetadata(testAccountId, testArn, 'inline-policies', [])
-      
+
       await store.deleteResource(testAccountId, testArn)
-      
+
       const metadataTypes = await store.listResourceMetadata(testAccountId, testArn)
       expect(metadataTypes).toHaveLength(0)
     })
 
     it('should delete metadata when saving empty content', async () => {
       await store.saveResourceMetadata(testAccountId, testArn, testMetadataType, testData)
-      
+
       // Save empty content should delete the metadata
       await store.saveResourceMetadata(testAccountId, testArn, testMetadataType, null)
-      
+
       const result = await store.getResourceMetadata(testAccountId, testArn, testMetadataType)
       expect(result).toBeUndefined()
     })
@@ -92,13 +97,13 @@ describe('SqliteAwsIamStore', () => {
     it('should handle string and object data types', async () => {
       const stringData = 'test string data'
       const objectData = { key: 'value', nested: { data: 123 } }
-      
+
       await store.saveResourceMetadata(testAccountId, testArn, 'string-type', stringData)
       await store.saveResourceMetadata(testAccountId, testArn, 'object-type', objectData)
-      
+
       const stringResult = await store.getResourceMetadata(testAccountId, testArn, 'string-type')
       const objectResult = await store.getResourceMetadata(testAccountId, testArn, 'object-type')
-      
+
       expect(stringResult).toEqual(stringData)
       expect(objectResult).toEqual(objectData)
     })
@@ -111,7 +116,7 @@ describe('SqliteAwsIamStore', () => {
 
     it('should save and retrieve account metadata', async () => {
       await store.saveAccountMetadata(testAccountId, testMetadataType, testData)
-      
+
       const result = await store.getAccountMetadata(testAccountId, testMetadataType)
       expect(result).toEqual(testData)
     })
@@ -125,7 +130,7 @@ describe('SqliteAwsIamStore', () => {
     it('should delete account metadata', async () => {
       await store.saveAccountMetadata(testAccountId, testMetadataType, testData)
       await store.deleteAccountMetadata(testAccountId, testMetadataType)
-      
+
       const result = await store.getAccountMetadata(testAccountId, testMetadataType)
       expect(result).toBeUndefined()
     })
@@ -133,7 +138,7 @@ describe('SqliteAwsIamStore', () => {
     it('should delete metadata when saving empty content', async () => {
       await store.saveAccountMetadata(testAccountId, testMetadataType, testData)
       await store.saveAccountMetadata(testAccountId, testMetadataType, {})
-      
+
       const result = await store.getAccountMetadata(testAccountId, testMetadataType)
       expect(result).toBeUndefined()
     })
@@ -146,7 +151,7 @@ describe('SqliteAwsIamStore', () => {
 
     it('should save and retrieve organization metadata', async () => {
       await store.saveOrganizationMetadata(testOrgId, testMetadataType, testData)
-      
+
       const result = await store.getOrganizationMetadata(testOrgId, testMetadataType)
       expect(result).toEqual(testData)
     })
@@ -160,7 +165,7 @@ describe('SqliteAwsIamStore', () => {
     it('should delete organization metadata', async () => {
       await store.saveOrganizationMetadata(testOrgId, testMetadataType, testData)
       await store.deleteOrganizationMetadata(testOrgId, testMetadataType)
-      
+
       const result = await store.getOrganizationMetadata(testOrgId, testMetadataType)
       expect(result).toBeUndefined()
     })
@@ -174,15 +179,19 @@ describe('SqliteAwsIamStore', () => {
 
     it('should save and retrieve OU metadata', async () => {
       await store.saveOrganizationalUnitMetadata(testOrgId, testOuId, testMetadataType, testData)
-      
-      const result = await store.getOrganizationalUnitMetadata(testOrgId, testOuId, testMetadataType)
+
+      const result = await store.getOrganizationalUnitMetadata(
+        testOrgId,
+        testOuId,
+        testMetadataType
+      )
       expect(result).toEqual(testData)
     })
 
     it('should list organizational units', async () => {
       await store.saveOrganizationalUnitMetadata(testOrgId, 'ou-1', testMetadataType, testData)
       await store.saveOrganizationalUnitMetadata(testOrgId, 'ou-2', testMetadataType, testData)
-      
+
       const ous = await store.listOrganizationalUnits(testOrgId)
       expect(ous).toContain('ou-1')
       expect(ous).toContain('ou-2')
@@ -192,20 +201,28 @@ describe('SqliteAwsIamStore', () => {
     it('should delete OU metadata', async () => {
       await store.saveOrganizationalUnitMetadata(testOrgId, testOuId, testMetadataType, testData)
       await store.deleteOrganizationalUnitMetadata(testOrgId, testOuId, testMetadataType)
-      
-      const result = await store.getOrganizationalUnitMetadata(testOrgId, testOuId, testMetadataType)
+
+      const result = await store.getOrganizationalUnitMetadata(
+        testOrgId,
+        testOuId,
+        testMetadataType
+      )
       expect(result).toBeUndefined()
     })
 
     it('should delete entire OU', async () => {
       await store.saveOrganizationalUnitMetadata(testOrgId, testOuId, 'metadata', testData)
       await store.saveOrganizationalUnitMetadata(testOrgId, testOuId, 'policies', [])
-      
+
       await store.deleteOrganizationalUnit(testOrgId, testOuId)
-      
+
       const metaResult = await store.getOrganizationalUnitMetadata(testOrgId, testOuId, 'metadata')
-      const policyResult = await store.getOrganizationalUnitMetadata(testOrgId, testOuId, 'policies')
-      
+      const policyResult = await store.getOrganizationalUnitMetadata(
+        testOrgId,
+        testOuId,
+        'policies'
+      )
+
       expect(metaResult).toBeUndefined()
       expect(policyResult).toBeUndefined()
     })
@@ -226,7 +243,7 @@ describe('SqliteAwsIamStore', () => {
         testMetadataType,
         testData
       )
-      
+
       const result = await store.getOrganizationPolicyMetadata(
         testOrgId,
         testPolicyType,
@@ -237,9 +254,21 @@ describe('SqliteAwsIamStore', () => {
     })
 
     it('should list organization policies', async () => {
-      await store.saveOrganizationPolicyMetadata(testOrgId, testPolicyType, 'policy-1', testMetadataType, testData)
-      await store.saveOrganizationPolicyMetadata(testOrgId, testPolicyType, 'policy-2', testMetadataType, testData)
-      
+      await store.saveOrganizationPolicyMetadata(
+        testOrgId,
+        testPolicyType,
+        'policy-1',
+        testMetadataType,
+        testData
+      )
+      await store.saveOrganizationPolicyMetadata(
+        testOrgId,
+        testPolicyType,
+        'policy-2',
+        testMetadataType,
+        testData
+      )
+
       const policies = await store.listOrganizationPolicies(testOrgId, testPolicyType)
       expect(policies).toContain('policy-1')
       expect(policies).toContain('policy-2')
@@ -254,14 +283,14 @@ describe('SqliteAwsIamStore', () => {
         testMetadataType,
         testData
       )
-      
+
       await store.deleteOrganizationPolicyMetadata(
         testOrgId,
         testPolicyType,
         testPolicyId,
         testMetadataType
       )
-      
+
       const result = await store.getOrganizationPolicyMetadata(
         testOrgId,
         testPolicyType,
@@ -272,14 +301,36 @@ describe('SqliteAwsIamStore', () => {
     })
 
     it('should delete entire policy', async () => {
-      await store.saveOrganizationPolicyMetadata(testOrgId, testPolicyType, testPolicyId, 'metadata', testData)
-      await store.saveOrganizationPolicyMetadata(testOrgId, testPolicyType, testPolicyId, 'targets', [])
-      
+      await store.saveOrganizationPolicyMetadata(
+        testOrgId,
+        testPolicyType,
+        testPolicyId,
+        'metadata',
+        testData
+      )
+      await store.saveOrganizationPolicyMetadata(
+        testOrgId,
+        testPolicyType,
+        testPolicyId,
+        'targets',
+        []
+      )
+
       await store.deleteOrganizationPolicy(testOrgId, testPolicyType, testPolicyId)
-      
-      const metaResult = await store.getOrganizationPolicyMetadata(testOrgId, testPolicyType, testPolicyId, 'metadata')
-      const targetsResult = await store.getOrganizationPolicyMetadata(testOrgId, testPolicyType, testPolicyId, 'targets')
-      
+
+      const metaResult = await store.getOrganizationPolicyMetadata(
+        testOrgId,
+        testPolicyType,
+        testPolicyId,
+        'metadata'
+      )
+      const targetsResult = await store.getOrganizationPolicyMetadata(
+        testOrgId,
+        testPolicyType,
+        testPolicyId,
+        'targets'
+      )
+
       expect(metaResult).toBeUndefined()
       expect(targetsResult).toBeUndefined()
     })
@@ -292,7 +343,7 @@ describe('SqliteAwsIamStore', () => {
 
     it('should save and retrieve RAM resource', async () => {
       await store.saveRamResource(testAccountId, testArn, testData)
-      
+
       const result = await store.getRamResource(testAccountId, testArn)
       expect(result).toEqual(testData)
     })
@@ -307,20 +358,20 @@ describe('SqliteAwsIamStore', () => {
       const arn1 = 'arn:aws:ram:us-east-1:123456789012:resource-share/share-1'
       const arn2 = 'arn:aws:ram:us-east-1:123456789012:resource-share/share-2'
       const arn3 = 'arn:aws:ram:us-east-1:123456789012:resource-share/share-3'
-      
+
       // Save some initial resources
       await store.saveRamResource(testAccountId, arn1, { name: 'share-1' })
       await store.saveRamResource(testAccountId, arn2, { name: 'share-2' })
       await store.saveRamResource(testAccountId, arn3, { name: 'share-3' })
-      
+
       // Sync with only arn1 and arn3
       await store.syncRamResources(testAccountId, 'us-east-1', [arn1, arn3])
-      
+
       // arn2 should be deleted
       const result1 = await store.getRamResource(testAccountId, arn1)
       const result2 = await store.getRamResource(testAccountId, arn2)
       const result3 = await store.getRamResource(testAccountId, arn3)
-      
+
       expect(result1).toEqual({ name: 'share-1' })
       expect(result2).toBeUndefined()
       expect(result3).toEqual({ name: 'share-3' })
@@ -334,9 +385,9 @@ describe('SqliteAwsIamStore', () => {
     it('should save and retrieve index with lock ID', async () => {
       const { lockId } = await store.getIndex(testIndexName, {})
       const success = await store.saveIndex(testIndexName, testData, lockId)
-      
+
       expect(success).toBe(true)
-      
+
       const { data } = await store.getIndex(testIndexName, {})
       expect(data).toEqual(testData)
     })
@@ -344,14 +395,14 @@ describe('SqliteAwsIamStore', () => {
     it('should return default value for non-existent index', async () => {
       const defaultValue = { default: true }
       const { data } = await store.getIndex(testIndexName, defaultValue)
-      
+
       expect(data).toEqual(defaultValue)
     })
 
     it('should fail to save with incorrect lock ID (optimistic locking)', async () => {
       const { lockId } = await store.getIndex(testIndexName, {})
       await store.saveIndex(testIndexName, testData, lockId)
-      
+
       // Try to save with the old lock ID
       const success = await store.saveIndex(testIndexName, { new: 'data' }, lockId)
       expect(success).toBe(false)
@@ -360,10 +411,10 @@ describe('SqliteAwsIamStore', () => {
     it('should succeed with current lock ID', async () => {
       const { lockId: lockId1 } = await store.getIndex(testIndexName, {})
       await store.saveIndex(testIndexName, testData, lockId1)
-      
+
       const { lockId: lockId2 } = await store.getIndex(testIndexName, {})
       const success = await store.saveIndex(testIndexName, { updated: 'data' }, lockId2)
-      
+
       expect(success).toBe(true)
     })
   })
@@ -385,16 +436,13 @@ describe('SqliteAwsIamStore', () => {
         'metadata',
         { UserName: 'test-user' }
       )
-      await store.saveResourceMetadata(
-        testAccountId,
-        'arn:aws:s3:::test-bucket',
-        'policy',
-        { Version: '2012-10-17' }
-      )
+      await store.saveResourceMetadata(testAccountId, 'arn:aws:s3:::test-bucket', 'policy', {
+        Version: '2012-10-17'
+      })
 
       const iamResources = await store.listResources(testAccountId, { service: 'iam' })
       const s3Resources = await store.listResources(testAccountId, { service: 's3' })
-      
+
       expect(iamResources).toHaveLength(2)
       expect(s3Resources).toHaveLength(1)
       expect(iamResources).toContain('arn:aws:iam::123456789012:role/test-role')
@@ -425,7 +473,7 @@ describe('SqliteAwsIamStore', () => {
         service: 'iam',
         resourceType: 'user'
       })
-      
+
       expect(roleResources).toHaveLength(1)
       expect(userResources).toHaveLength(1)
       expect(roleResources).toContain('arn:aws:iam::123456789012:role/test-role')
@@ -440,17 +488,23 @@ describe('SqliteAwsIamStore', () => {
       const arn1 = 'arn:aws:iam::123456789012:role/role-1'
       const arn2 = 'arn:aws:iam::123456789012:role/role-2'
       const arn3 = 'arn:aws:iam::123456789012:role/role-3'
-      
+
       // Save some initial resources with non-empty content
       await store.saveResourceMetadata(testAccountId, arn1, 'metadata', { name: 'role-1' })
       await store.saveResourceMetadata(testAccountId, arn2, 'metadata', { name: 'role-2' })
       await store.saveResourceMetadata(testAccountId, arn3, 'metadata', { name: 'role-3' })
-      
+
       // Sync with only arn1 and arn3
-      await store.syncResourceList(testAccountId, { service: 'iam', resourceType: 'role' }, [arn1, arn3])
-      
+      await store.syncResourceList(testAccountId, { service: 'iam', resourceType: 'role' }, [
+        arn1,
+        arn3
+      ])
+
       // Check that arn2 was removed
-      const resources = await store.listResources(testAccountId, { service: 'iam', resourceType: 'role' })
+      const resources = await store.listResources(testAccountId, {
+        service: 'iam',
+        resourceType: 'role'
+      })
       expect(resources).toContain(arn1)
       expect(resources).toContain(arn3)
       expect(resources).not.toContain(arn2)
@@ -459,12 +513,21 @@ describe('SqliteAwsIamStore', () => {
 
   describe('List Account IDs', () => {
     it('should list all account IDs with data', async () => {
-      await store.saveResourceMetadata('111111111111', 'arn:aws:iam::111111111111:role/role-1', 'metadata', { name: 'role-1' })
+      await store.saveResourceMetadata(
+        '111111111111',
+        'arn:aws:iam::111111111111:role/role-1',
+        'metadata',
+        { name: 'role-1' }
+      )
       await store.saveAccountMetadata('222222222222', 'metadata', { name: 'account-2' })
-      await store.saveRamResource('333333333333', 'arn:aws:ram:us-east-1:333333333333:share/share-1', { name: 'share-1' })
-      
+      await store.saveRamResource(
+        '333333333333',
+        'arn:aws:ram:us-east-1:333333333333:share/share-1',
+        { name: 'share-1' }
+      )
+
       const accountIds = await store.listAccountIds()
-      
+
       expect(accountIds).toContain('111111111111')
       expect(accountIds).toContain('222222222222')
       expect(accountIds).toContain('333333333333')
