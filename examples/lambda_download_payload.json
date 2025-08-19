@@ -1,0 +1,25 @@
+{
+    "config": {
+        "name": "lambda-config",
+        "iamCollectVersion": "0.1.0",
+        "storage": {
+            "type": "s3",
+            "bucket": "my-iam-data-bucket",
+            "prefix": "iam-data/",
+            "region": "us-east-1"
+        },
+        "auth": {
+            "role": {
+                "pathAndName": "IAMCollectRole",
+                "sessionName": "lambda-session"
+            }
+        },
+        "accounts": {
+            "included": ["123456789012", "987654321098"]
+        }
+    },
+    "services": ["iam", "s3", "ec2"],
+    "regions": ["us-east-1", "us-west-2"],
+    "concurrency": 4,
+    "skipIndex": false
+}

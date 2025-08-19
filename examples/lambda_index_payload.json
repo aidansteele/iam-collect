@@ -1,0 +1,15 @@
+{
+    "config": {
+        "name": "lambda-config",
+        "iamCollectVersion": "0.1.0",
+        "storage": {
+            "type": "s3",
+            "bucket": "my-iam-data-bucket",
+            "prefix": "iam-data/",
+            "region": "us-east-1"
+        }
+    },
+    "partition": "aws",
+    "services": ["iam", "s3", "ec2"],
+    "concurrency": 4
+}

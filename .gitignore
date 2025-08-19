@@ -6,3 +6,20 @@ coverage
 todo.md
 iam-data
 iam-collect.jsonc
+
+# Go specific
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+*.test
+*.out
+go.sum
+
+# Go build artifacts
+/iam-collect
+/examples/basic_usage
+/examples/s3_multi_account
+/examples/lambda_download
+/examples/lambda_index
